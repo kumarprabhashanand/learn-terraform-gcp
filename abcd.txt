@@ -9,3 +9,24 @@ gcloud container clusters get-credentials $(terraform output -raw kubernetes_clu
 
 https://cloud.google.com/blog/products/gcp/how-to-deploy-geographically-distributed-services-on-kubernetes-engine-with-kubemci
 
+
+https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-ingress-setup#standalone-pricing
+
+//get credentials
+gcloud container clusters get-credentials nik-gcp-learning-gke --region asia-south1
+gcloud container clusters get-credentials nik-gcp-learning-gke-sec --region asia-south2
+
+//rename context
+kubectl config rename-context gke_nik-gcp-learning_asia-south1_nik-gcp-learning-gke gke-pri
+kubectl config rename-context gke_nik-gcp-learning_asia-south2_nik-gcp-learning-gke-sec gke-sec
+
+//add to fleet
+gcloud container fleet memberships register gke-asia-south1-fleet --gke-cluster=asia-south1/nik-gcp-learning-gke --enable-workload-identity --project=nik-gcp-learning
+gcloud container fleet memberships register gke-asia-south2-fleet --gke-cluster=asia-south2/nik-gcp-learning-gke-sec --enable-workload-identity --project=nik-gcp-learning
+
+gcloud container fleet memberships list --project=nik-gcp-learning
+
+//enable multi cluster ingress
+gcloud container fleet ingress enable --config-membership=gke-asia-south1-fleet
+
+gcloud container fleet ingress describe
